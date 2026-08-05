@@ -1,0 +1,182 @@
+# ============================================================================
+# AI 模型部署平台 - 基础镜像构建流水线
+#
+# 功能：
+#   1. 构建 Docker 基础镜像（CUDA 12.1 + PyTorch 2.4 + 通用框架）
+#   2. 将镜像导出为 gzip 压缩包（.tar.gz）
+#   3. 生成 SHA256 校验文件
+#   4. 上传为 GitHub Actions Artifact，供企业内网下载
+#
+# 使用方式：
+#   - 自动触发：修改 Dockerfile / requirements-base.txt 后推送到 main 分支
+#   - 手动触发：GitHub 仓库 → Actions → Build Base Image → Run workflow
+#
+# 下载与加载：
+#   1. 在 Actions 运行结果页面下载 artifact: model-deploy-image
+#   2. 解压下载的 zip，得到 model-deploy.tar.gz 和 model-deploy.tar.gz.sha256
+#   3. 校验完整性：sha256sum -c model-deploy.tar.gz.sha256
+#   4. 加载镜像：docker load -i model-deploy.tar.gz
+#   5. 验证镜像：docker images model-deploy:1.0
+# ============================================================================
+
+name: Build Base Image
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'Dockerfile'
+      - 'requirements-base.txt'
+      - '.github/workflows/build-image.yml'
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: model-deploy
+  IMAGE_TAG: '1.0'
+
+concurrency:
+  group: build-image-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build & Export Image
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      # ------------------------------------------------------------------
+      # 1. 代码检出
+      # ------------------------------------------------------------------
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ------------------------------------------------------------------
+      # 2. 释放磁盘空间（GitHub Runner 默认约 14GB 可用，镜像构建需要更多）
+      # ------------------------------------------------------------------
+      - name: Free disk space
+        run: |
+          echo "========== 磁盘空间（清理前）=========="
+          df -h /
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache
+          sudo apt-get clean
+          docker system prune -af --volumes || true
+          echo "========== 磁盘空间（清理后）=========="
+          df -h /
+
+      # ------------------------------------------------------------------
+      # 3. 构建 Docker 镜像（使用 GHA 缓存加速二次构建）
+      # ------------------------------------------------------------------
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          load: true
+          tags: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # ------------------------------------------------------------------
+      # 4. 查看镜像信息
+      # ------------------------------------------------------------------
+      - name: Show image info
+        run: |
+          echo "========== 镜像列表 =========="
+          docker images ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+          echo ""
+          echo "========== 镜像详情 =========="
+          docker inspect ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} \
+            --format='Image: {{.RepoTags}}' \
+            --format='Size:  {{.Size}} bytes' \
+            --format='Created: {{.Created}}'
+
+      # ------------------------------------------------------------------
+      # 5. 导出镜像为 gzip 压缩包 + 生成 SHA256 校验文件
+      # ------------------------------------------------------------------
+      - name: Save and compress image
+        id: save
+        run: |
+          mkdir -p /tmp/artifacts
+
+          echo "========== 导出镜像（docker save | gzip）=========="
+          docker save ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} \
+            | gzip -6 > /tmp/artifacts/model-deploy.tar.gz
+
+          echo "========== 生成 SHA256 校验文件 =========="
+          cd /tmp/artifacts
+          sha256sum model-deploy.tar.gz > model-deploy.tar.gz.sha256
+
+          echo "========== 产物文件列表 =========="
+          ls -lh /tmp/artifacts/
+
+          # 输出压缩包大小供后续步骤引用
+          SIZE=$(du -h /tmp/artifacts/model-deploy.tar.gz | cut -f1)
+          echo "archive_size=$SIZE" >> $GITHUB_OUTPUT
+          echo "压缩包大小: $SIZE"
+
+      # ------------------------------------------------------------------
+      # 6. 上传 Artifact（供企业内网下载）
+      # ------------------------------------------------------------------
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: model-deploy-image
+          path: /tmp/artifacts/
+          retention-days: 30
+          compression-level: 0
+
+      # ------------------------------------------------------------------
+      # 7. 在 Job Summary 中输出使用说明
+      # ------------------------------------------------------------------
+      - name: Write job summary
+        run: |
+          cat >> $GITHUB_STEP_SUMMARY << 'EOF'
+          ## 基础镜像构建完成
+
+          | 项目 | 值 |
+          |------|----|
+          | 镜像名称 | `model-deploy:1.0` |
+          | 压缩包大小 | ${{ steps.save.outputs.archive_size }} |
+          | Artifact | `model-deploy-image` |
+          | 保留天数 | 30 天 |
+
+          ### 下载与加载步骤
+
+          ```bash
+          # 1. 从 GitHub Actions 下载 artifact: model-deploy-image
+          #    （下载得到一个 zip，解压后有 model-deploy.tar.gz 和 .sha256）
+
+          # 2. 校验文件完整性
+          sha256sum -c model-deploy.tar.gz.sha256
+
+          # 3. 加载镜像到本地 Docker
+          docker load -i model-deploy.tar.gz
+
+          # 4. 验证镜像已加载
+          docker images model-deploy:1.0
+          ```
+
+          ### 部署使用示例
+
+          ```bash
+          # 启动 OCR 服务（示例）
+          docker run --gpus all -d \
+            --name ocr-service \
+            -e MODEL_TYPE=ocr \
+            -e MODEL_ID=baidu/Unlimited-OCR \
+            -e SERVICE_PORT=8000 \
+            -e HF_ENDPOINT=https://hf-mirror.com \
+            -v /host/deploy:/deploy \
+            -v /host/models:/data/models \
+            -v /host/pip-cache:/data/pip-cache \
+            -v /host/outputs:/data/outputs \
+            -p 8000:8000 \
+            model-deploy:1.0 \
+            /deploy/scripts/entrypoint.sh
+          ```
+          EOF

@@ -1,0 +1,34 @@
+# Git
+.git
+.gitignore
+
+# 文档
+*.md
+docs/
+
+# CI/CD 配置
+.github/
+
+# Docker 自身文件
+Dockerfile
+.dockerignore
+
+# Python 缓存与虚拟环境
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.venv/
+venv/
+.env
+
+# 操作系统文件
+.DS_Store
+Thumbs.db
+
+# 部署配置（属于仓库2，不打入镜像）
+requirements/
+scripts/
+config/
+app/
+docker-compose.yml
