@@ -1,0 +1,10 @@
+# ============================================================================
+# requirements/embedding.txt — 嵌入检索 / 重排序（17 个模型）
+# ============================================================================
+
+# --- sentence-transformers 系（MiniLM / bge-m3 / nomic / arctic） ---
+sentence-transformers>=2.7.0
+
+# --- transformers 系嵌入（Nemotron-Embed / Qwen3-Embedding / jina / gemma / granite） ---
+# transformers 已在镜像 L2 固化；Qwen3-Embedding 需要较新版本，按需覆盖
+transformers>=4.50.0

@@ -1,0 +1,13 @@
+# ============================================================================
+# requirements/other.txt — 其他专用（7 个模型：时序预测 / 隐私过滤 / 安全检测）
+# ============================================================================
+
+# --- 时序预测（amazon/chronos 系列 + chronos-bolt 系列） ---
+chronos-forecasting>=1.1.0
+
+# --- 时序预测（google/timesfm-2.5-200m-pytorch） ---
+timesfm-utilities>=0.1.0
+
+# --- 隐私过滤（openai/privacy-filter，transformers 已在镜像 L2 固化） ---
+
+# --- 安全检测（cisco-ai/Antares-1B，需 Cisco Antares 运行时，按官方 README 补齐后追加） ---

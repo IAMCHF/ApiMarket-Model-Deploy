@@ -1,0 +1,135 @@
+# ============================================================================
+# config/models.yaml — 模型映射表（挂载自宿主机 /deploy/config）
+#
+# 用途：
+#   - entrypoint.sh 根据 category 决定安装哪个 requirements 文件
+#   - download_models.py 按 model_id 预下载权重
+#   - server.py 读取 category / 默认参数注入适配器
+#
+# category 取值与 requirements/{category}.txt 一一对应：
+#   ocr / asr / tts / image-gen / video-gen / 3d-gen / embedding /
+#   detection / robot / code-gen / other
+# ============================================================================
+
+models:
+  # ---------------- OCR / 文档解析（23） ----------------
+  baidu/Unlimited-OCR: {category: ocr, vram_gb: 6}
+  ATH-MaaS/OvisOCR2: {category: ocr, vram_gb: 1.8}
+  deepseek-ai/DeepSeek-OCR-2: {category: ocr, vram_gb: 6}
+  PaddlePaddle/PaddleOCR-VL-1.6: {category: ocr, vram_gb: 2}
+  PaddlePaddle/PP-OCRv5: {category: ocr, vram_gb: 0.02}
+  tencent/HunyuanOCR: {category: ocr, vram_gb: 2}
+  numind/NuMarkdown-8B-Thinking: {category: ocr, vram_gb: 16}
+  lightonai/LightOnOCR-2-1B: {category: ocr, vram_gb: 2}
+  nvidia/NVIDIA-Nemotron-Parse-v1.2: {category: ocr, vram_gb: 1.8}
+  ibm-granite/granite-docling-258M: {category: ocr, vram_gb: 0.6}
+  openbmb/MiniCPM-V-4.6: {category: ocr, vram_gb: 2}
+  numind/NuExtract3: {category: ocr, vram_gb: 10}
+  microsoft/Fara1.5-9B: {category: ocr, vram_gb: 18}
+  microsoft/Fara1.5-4B: {category: ocr, vram_gb: 10}
+  rednote-hilab/dots.ocr: {category: ocr, vram_gb: 4}
+  allenai/olmOCR-2-7B-1025: {category: ocr, vram_gb: 16}
+  opendatalab/MinerU2.5-Pro-2604-1.2B: {category: ocr, vram_gb: 6}
+  stepfun-ai/GOT-OCR2_0: {category: ocr, vram_gb: 2}
+  Qwen/Qwen3-VL-8B-Instruct: {category: ocr, vram_gb: 16}
+  OpenGVLab/InternVL3-2B-Instruct: {category: ocr, vram_gb: 5}
+  THUDM/GLM-4.1V-9B-Thinking: {category: ocr, vram_gb: 18}
+  HuggingFaceTB/SmolVLM-Instruct: {category: ocr, vram_gb: 5}
+  zai-org/GLM-OCR: {category: ocr, vram_gb: 3}
+
+  # ---------------- 语音识别 ASR（9） ----------------
+  nvidia/nemotron-3.5-asr-streaming-0.6b: {category: asr, vram_gb: 1.2}
+  pyannote/speaker-diarization-community-1: {category: asr, vram_gb: 0.2}
+  Qwen/Qwen3-ASR-1.7B: {category: asr, vram_gb: 4}
+  nvidia/parakeet-tdt-0.6b-v3: {category: asr, vram_gb: 1.2}
+  Qwen/Qwen3-ASR-0.6B-hf: {category: asr, vram_gb: 1.6}
+  nvidia/canary-qwen-2.5b: {category: asr, vram_gb: 6}
+  stepfun-ai/Step-Audio-2-mini: {category: asr, vram_gb: 4}
+  CohereLabs/cohere-transcribe-03-2026: {category: asr, vram_gb: 5}
+  OpenMOSS-Team/MOSS-Transcribe-Diarize-0.9B: {category: asr, vram_gb: 3}
+
+  # ---------------- 语音合成 TTS（13） ----------------
+  Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice: {category: tts, vram_gb: 3.4}
+  k2-fsa/OmniVoice: {category: tts, vram_gb: 1.2}
+  neuphonic/neutts-2e: {category: tts, vram_gb: 0.4}
+  fishaudio/s2-pro: {category: tts, vram_gb: 10}
+  microsoft/VibeVoice-Realtime-0.5B: {category: tts, vram_gb: 1}
+  microsoft/VibeVoice-1.5B: {category: tts, vram_gb: 6}
+  FunAudioLLM/Fun-CosyVoice3-0.5B-2512: {category: tts, vram_gb: 1}
+  IndexTeam/IndexTTS2: {category: tts, vram_gb: 4}
+  OpenMOSS-Team/MOSS-TTS: {category: tts, vram_gb: 4}
+  sesame/csm-1b: {category: tts, vram_gb: 3}
+  canopylabs/orpheus-3b-0.1-ft: {category: tts, vram_gb: 6}
+  Zyphra/Zonos: {category: tts, vram_gb: 4}
+  openbmb/VoxCPM2: {category: tts, vram_gb: 8}
+
+  # ---------------- 图像生成 / 编辑（9） ----------------
+  ideogram-ai/ideogram-4-fp8: {category: image-gen, vram_gb: 9}
+  black-forest-labs/FLUX.2-klein-9B: {category: image-gen, vram_gb: 18}
+  ideogram-ai/ideogram-4-nf4: {category: image-gen, vram_gb: 2.5}
+  black-forest-labs/FLUX.2-klein-4B: {category: image-gen, vram_gb: 8}
+  stabilityai/stable-diffusion-3.5-large-turbo: {category: image-gen, vram_gb: 16}
+  stabilityai/stable-diffusion-3.5-medium: {category: image-gen, vram_gb: 9}
+  Efficient-Large-Model/Sana_Sprint_1.6B_1024px: {category: image-gen, vram_gb: 9}
+  Efficient-Large-Model/Sana_1.5: {category: image-gen, vram_gb: 16}
+  stepfun-ai/Step1X-Edit: {category: image-gen, vram_gb: 28}
+
+  # ---------------- 视频生成 / 编辑（3） ----------------
+  Qualcomm-AI-Research/mobilewan: {category: video-gen, vram_gb: 10}
+  Wan-AI/Wan2.1-T2V-1.3B: {category: video-gen, vram_gb: 2}
+  tencent/HunyuanVideo-1.5: {category: video-gen, vram_gb: 14}
+
+  # ---------------- 3D 生成 / 重建（6） ----------------
+  nvidia/instant-nurec: {category: 3d-gen, vram_gb: 2}
+  microsoft/TRELLIS.2-4B: {category: 3d-gen, vram_gb: 8}
+  tencent/Hunyuan3D-2.1: {category: 3d-gen, vram_gb: 6}
+  stabilityai/stable-fast-3d: {category: 3d-gen, vram_gb: 6}
+  VAST-AI/TripoSG: {category: 3d-gen, vram_gb: 6}
+  stepfun-ai/Step1X-3D: {category: 3d-gen, vram_gb: 18}
+
+  # ---------------- 嵌入检索 / 重排序（17） ----------------
+  nvidia/Nemotron-3-Embed-1B-BF16: {category: embedding, vram_gb: 2}
+  nvidia/Nemotron-3-Embed-8B-BF16: {category: embedding, vram_gb: 16}
+  nvidia/Nemotron-3-Embed-1B-NVFP4: {category: embedding, vram_gb: 0.4}
+  Qwen/Qwen3-Embedding-8B: {category: embedding, vram_gb: 16}
+  Qwen/Qwen3-Embedding-0.6B: {category: embedding, vram_gb: 1.2}
+  jinaai/jina-embeddings-v5-omni-small: {category: embedding, vram_gb: 4}
+  sentence-transformers/all-MiniLM-L6-v2: {category: embedding, vram_gb: 0.05}
+  BAAI/bge-m3: {category: embedding, vram_gb: 1.1}
+  BAAI/bge-reranker-v2-m3: {category: embedding, vram_gb: 1.2}
+  google/embeddinggemma-300m: {category: embedding, vram_gb: 0.6}
+  nomic-ai/nomic-embed-text-v2-moe: {category: embedding, vram_gb: 1}
+  Snowflake/snowflake-arctic-embed-l-v2.0: {category: embedding, vram_gb: 2}
+  Snowflake/snowflake-arctic-embed-m-v2.0: {category: embedding, vram_gb: 1}
+  Qwen/Qwen3-Reranker-0.6B: {category: embedding, vram_gb: 2}
+  Qwen/Qwen3-Reranker-4B: {category: embedding, vram_gb: 10}
+  Qwen/Qwen3-Embedding-4B: {category: embedding, vram_gb: 10}
+  ibm-granite/granite-embedding-97m-multilingual-r2: {category: embedding, vram_gb: 0.4}
+
+  # ---------------- 图像分割 / 目标检测（8） ----------------
+  facebook/sam3: {category: detection, vram_gb: 1.8}
+  facebook/sam3.1: {category: detection, vram_gb: 1.8}
+  briaai/RMBG-2.0: {category: detection, vram_gb: 0.4}
+  facebook/EdgeTAM: {category: detection, vram_gb: 2}
+  Roboflow/rf-detr: {category: detection, vram_gb: 2}
+  Roboflow/rf-detr-segmentation: {category: detection, vram_gb: 2}
+  IDEA-Research/grounding-dino-1.5-pro: {category: detection, vram_gb: 3}
+  Intellindust/DEIMv2_DINOv3_X_COCO: {category: detection, vram_gb: 2}
+
+  # ---------------- 机器人 / 具身智能（2） ----------------
+  nvidia/GR00T-N1.7-3B: {category: robot, vram_gb: 6}
+  nvidia/GR00T-N1.7-DROID: {category: robot, vram_gb: 10}
+
+  # ---------------- 代码生成（3） ----------------
+  Qwen/Qwen2.5-Coder-7B-Instruct-GGUF: {category: code-gen, vram_gb: 3.5}
+  Qwen/Qwen3-Coder-30B-A3B-Instruct: {category: code-gen, vram_gb: 31}
+  deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct: {category: code-gen, vram_gb: 32}
+
+  # ---------------- 其他专用（7） ----------------
+  amazon/chronos-2: {category: other, vram_gb: 0.2}
+  openai/privacy-filter: {category: other, vram_gb: 2}
+  amazon/chronos-bolt-base: {category: other, vram_gb: 1}
+  amazon/chronos-bolt-large: {category: other, vram_gb: 2}
+  amazon/chronos-bolt-mini: {category: other, vram_gb: 1}
+  google/timesfm-2.5-200m-pytorch: {category: other, vram_gb: 2}
+  cisco-ai/Antares-1B: {category: other, vram_gb: 6}

@@ -1,0 +1,14 @@
+# ============================================================================
+# requirements/asr.txt — 语音识别 ASR（9 个模型）
+# ============================================================================
+
+# --- NeMo 系（nemotron-asr / parakeet / canary / cohere-transcribe） ---
+# nemo_toolkit 体积大且自带 torch 版本约束，如与镜像 torch 2.4 冲突，
+# 建议单独为该类模型覆盖 torch 版本（entrypoint 中 pip install -U torch）
+nemo_toolkit>=1.23.0
+
+# --- 说话人分离（pyannote） ---
+pyannote.audio>=3.1.0
+
+# --- transformers 系音频 LLM（Qwen3-ASR / Step-Audio / MOSS） ---
+# transformers / torchaudio 已在镜像 L2 固化

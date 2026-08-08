@@ -1,0 +1,97 @@
+# ============================================================================
+# docker-compose.yml — 单镜像多服务编排示例
+#
+# 所有服务共用同一个镜像 model-deploy:1.0，差异通过环境变量区分：
+#   - MODEL_TYPE：决定安装哪类专用依赖
+#   - MODEL_ID：决定加载哪个模型
+#   - SERVICE_PORT：服务监听端口
+#
+# 首次启动会安装依赖（2~5 分钟）并下载权重，之后命中 pip-cache / model-store 卷秒级启动。
+# ============================================================================
+
+services:
+  ocr-service:
+    image: model-deploy:1.0            # 同一个镜像，永不重建
+    command: ["/deploy/scripts/entrypoint.sh"]
+    environment:
+      - MODEL_TYPE=ocr
+      - MODEL_ID=baidu/Unlimited-OCR
+      - SERVICE_PORT=8000
+      - NVIDIA_VISIBLE_DEVICES=0
+      - HF_ENDPOINT=https://hf-mirror.com   # 国内镜像，内网可移除
+    volumes:
+      - /host/deploy:/deploy           # 脚本 + requirements + 配置 + app
+      - model-store:/data/models        # 权重（所有服务共享）
+      - pip-cache:/data/pip-cache       # pip 缓存（所有服务共享）
+      - /host/outputs:/data/outputs
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "/deploy/scripts/healthcheck.py", "--port", "8000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10m                # 首次装包+下载权重可能超过 10 分钟
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+
+  embedding-service:
+    image: model-deploy:1.0            # 同一个镜像
+    command: ["/deploy/scripts/entrypoint.sh"]
+    environment:
+      - MODEL_TYPE=embedding
+      - MODEL_ID=BAAI/bge-m3
+      - SERVICE_PORT=8001
+      - NVIDIA_VISIBLE_DEVICES=0        # 轻量模型可同卡共部署
+    volumes:
+      - /host/deploy:/deploy
+      - model-store:/data/models
+      - pip-cache:/data/pip-cache
+      - /host/outputs:/data/outputs
+    ports:
+      - "8001:8001"
+    healthcheck:
+      test: ["CMD", "python", "/deploy/scripts/healthcheck.py", "--port", "8001"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5m
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+
+  tts-service:
+    image: model-deploy:1.0            # 同一个镜像
+    command: ["/deploy/scripts/entrypoint.sh"]
+    environment:
+      - MODEL_TYPE=tts
+      - MODEL_ID=Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice
+      - SERVICE_PORT=8002
+      - NVIDIA_VISIBLE_DEVICES=0
+    volumes:
+      - /host/deploy:/deploy
+      - model-store:/data/models
+      - pip-cache:/data/pip-cache
+      - /host/outputs:/data/outputs
+    ports:
+      - "8002:8002"
+    healthcheck:
+      test: ["CMD", "python", "/deploy/scripts/healthcheck.py", "--port", "8002"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10m
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+
+volumes:
+  model-store:
+  pip-cache:
