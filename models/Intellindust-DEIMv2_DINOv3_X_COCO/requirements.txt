@@ -1,0 +1,35 @@
+# 依赖清单：common（平台通用）+ detection（模型类别）
+
+# ===== common =====
+# ============================================================================
+# requirements/common.txt — 所有服务必装的通用依赖（entrypoint 始终安装）
+# 对应 category: other 及平台基础
+# ============================================================================
+
+# --- API 服务框架 ---
+fastapi>=0.111.0
+uvicorn[standard]>=0.30.0
+pydantic>=2.7.0
+python-multipart>=0.0.9
+
+# --- 配置与序列化 ---
+pyyaml>=6.0
+requests>=2.32.0
+
+# ===== detection =====
+# ============================================================================
+# requirements/detection.txt — 图像分割 / 目标检测（8 个模型）
+# ============================================================================
+
+# --- 分割 / 抠图 ---
+# SAM3/SAM3.1 走 transformers（镜像 L2 已固化）；RMBG-2.0 走 transformers
+opencv-python-headless>=4.9.0
+
+# --- 目标检测 ---
+# Roboflow rf-detr 官方包
+rfdetr>=1.0.0
+# Grounding-DINO 官方仓库推理代码（需 git clone 或 pip 安装）
+groundingdino>=0.1.0
+supervision>=0.22.0
+
+# --- 待接入厂商运行时（EdgeTAM / DEIMv2，适配器为骨架，按官方 README 补齐） ---

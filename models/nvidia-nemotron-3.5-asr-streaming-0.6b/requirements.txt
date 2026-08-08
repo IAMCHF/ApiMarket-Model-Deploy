@@ -1,0 +1,33 @@
+# 依赖清单：common（平台通用）+ asr（模型类别）
+
+# ===== common =====
+# ============================================================================
+# requirements/common.txt — 所有服务必装的通用依赖（entrypoint 始终安装）
+# 对应 category: other 及平台基础
+# ============================================================================
+
+# --- API 服务框架 ---
+fastapi>=0.111.0
+uvicorn[standard]>=0.30.0
+pydantic>=2.7.0
+python-multipart>=0.0.9
+
+# --- 配置与序列化 ---
+pyyaml>=6.0
+requests>=2.32.0
+
+# ===== asr =====
+# ============================================================================
+# requirements/asr.txt — 语音识别 ASR（9 个模型）
+# ============================================================================
+
+# --- NeMo 系（nemotron-asr / parakeet / canary / cohere-transcribe） ---
+# nemo_toolkit 体积大且自带 torch 版本约束，如与镜像 torch 2.4 冲突，
+# 建议单独为该类模型覆盖 torch 版本（entrypoint 中 pip install -U torch）
+nemo_toolkit>=1.23.0
+
+# --- 说话人分离（pyannote） ---
+pyannote.audio>=3.1.0
+
+# --- transformers 系音频 LLM（Qwen3-ASR / Step-Audio / MOSS） ---
+# transformers / torchaudio 已在镜像 L2 固化

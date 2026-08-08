@@ -1,0 +1,32 @@
+# 依赖清单：common（平台通用）+ other（模型类别）
+
+# ===== common =====
+# ============================================================================
+# requirements/common.txt — 所有服务必装的通用依赖（entrypoint 始终安装）
+# 对应 category: other 及平台基础
+# ============================================================================
+
+# --- API 服务框架 ---
+fastapi>=0.111.0
+uvicorn[standard]>=0.30.0
+pydantic>=2.7.0
+python-multipart>=0.0.9
+
+# --- 配置与序列化 ---
+pyyaml>=6.0
+requests>=2.32.0
+
+# ===== other =====
+# ============================================================================
+# requirements/other.txt — 其他专用（7 个模型：时序预测 / 隐私过滤 / 安全检测）
+# ============================================================================
+
+# --- 时序预测（amazon/chronos 系列 + chronos-bolt 系列） ---
+chronos-forecasting>=1.1.0
+
+# --- 时序预测（google/timesfm-2.5-200m-pytorch） ---
+timesfm-utilities>=0.1.0
+
+# --- 隐私过滤（openai/privacy-filter，transformers 已在镜像 L2 固化） ---
+
+# --- 安全检测（cisco-ai/Antares-1B，需 Cisco Antares 运行时，按官方 README 补齐后追加） ---

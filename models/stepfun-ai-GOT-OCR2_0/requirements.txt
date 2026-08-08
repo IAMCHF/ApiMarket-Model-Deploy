@@ -1,0 +1,34 @@
+# 依赖清单：common（平台通用）+ ocr（模型类别）
+
+# ===== common =====
+# ============================================================================
+# requirements/common.txt — 所有服务必装的通用依赖（entrypoint 始终安装）
+# 对应 category: other 及平台基础
+# ============================================================================
+
+# --- API 服务框架 ---
+fastapi>=0.111.0
+uvicorn[standard]>=0.30.0
+pydantic>=2.7.0
+python-multipart>=0.0.9
+
+# --- 配置与序列化 ---
+pyyaml>=6.0
+requests>=2.32.0
+
+# ===== ocr =====
+# ============================================================================
+# requirements/ocr.txt — OCR / 文档解析（23 个模型）
+# ============================================================================
+
+# --- PaddlePaddle 系（PaddleOCR-VL-1.6 / PP-OCRv5） ---
+# paddlepaddle-gpu 自带 CUDA 运行时，与镜像 CUDA 共存（见方案 8.1）
+paddlepaddle-gpu>=2.6.0
+paddleocr>=2.8.0
+
+# --- docling 系（granite-docling-258M） ---
+docling>=2.0.0
+
+# --- VLM OCR 共用 ---
+# transformers / torch 已在镜像 L2 固化；此处仅补充视觉处理
+opencv-python-headless>=4.9.0
