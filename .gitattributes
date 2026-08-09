@@ -1,0 +1,4 @@
+# 脚本统一 LF 行尾（容器内 bash 执行，CRLF 会导致 set/pipefail 报错）
+*.sh text eol=lf
+*.bat text eol=crlf
+*.py text eol=lf
