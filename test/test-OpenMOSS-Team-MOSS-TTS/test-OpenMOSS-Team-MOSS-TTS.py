@@ -56,18 +56,11 @@ def main() -> int:
     base = f"http://{args.host}:{args.port}"
     ok = True
 
-    # ---- 1. /health ----
+    # ---- 1. /health（初始状态：模型懒加载，predict 前可能 503 loading，仅记录） ----
     try:
         resp = urllib.request.urlopen(base + "/health", timeout=15)
         body = json.loads(resp.read().decode())
         print(f"[health] {resp.status} status={body.get('status')} model={body.get('model')}")
-        if body.get("status") != "ready":
-            print(f"[health] 模型未就绪: state={body.get('state')} error={body.get('load_error')}")
-            ok = False
-    except urllib.error.HTTPError as exc:
-        body = json.loads(exc.read().decode())
-        print(f"[health] {exc.code} status={body.get('status')}")
-        ok = False
     except Exception as exc:
         print(f"[health] 连接失败: {exc}")
         return 1
@@ -97,6 +90,18 @@ def main() -> int:
         ok = False
     except Exception as exc:
         print(f"[predict] 失败: {exc}")
+        ok = False
+
+    # ---- 3. /health（推理后确认模型就绪） ----
+    try:
+        resp = urllib.request.urlopen(base + "/health", timeout=15)
+        body = json.loads(resp.read().decode())
+        print(f"[health] 推理后 status={body.get('status')} model_ready={body.get('model_ready')}")
+        if body.get("status") != "ready":
+            print(f"[health] 模型未就绪: state={body.get('state')} error={body.get('load_error')}")
+            ok = False
+    except Exception as exc:
+        print(f"[health] 推理后检查失败: {exc}")
         ok = False
 
     print("[结果] PASS" if ok else "[结果] FAIL")
