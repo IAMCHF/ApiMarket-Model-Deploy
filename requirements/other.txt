@@ -12,6 +12,9 @@ chronos-forecasting>=2.0.0
 # 按需按官方 README 安装；当前不阻塞 chronos 系列。
 # timesfm-utilities>=0.1.0
 
+# --- TimesFM 适配器 DataFrame 处理 ---
+pandas>=2.0.0
+
 # --- 隐私过滤（openai/privacy-filter，transformers 已在镜像 L2 固化） ---
 
 # --- 安全检测（cisco-ai/Antares-1B，需 Cisco Antares 运行时，按官方 README 补齐后追加） ---

@@ -25,6 +25,7 @@ requests>=2.32.0
 diffusers[video]>=0.31.0
 
 # --- 视频输出编码 ---
+imageio>=2.34.0
 imageio-ffmpeg>=0.4.9
 opencv-python-headless>=4.9.0
 

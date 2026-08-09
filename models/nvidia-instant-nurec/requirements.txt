@@ -29,5 +29,11 @@ trimesh>=4.0.0
 pygltflib>=1.16.0
 numpy>=1.26.0
 
-# --- 各家官方 3D 栈（Hunyuan3D / sf3d / TripoSG / Step1X-3D / instant-nurec）---
-# 对应适配器为骨架实现，按官方 README 补齐后在此追加依赖
+# --- Hunyuan3D（tencent/Hunyuan3D-2.1，官方 PyPI 包） ---
+hy3dgen>=0.1.0
+
+# --- stable-fast-3d（stabilityai，官方 PyPI 包） ---
+sf3d>=0.1.0
+
+# --- 各家官方 3D 栈（TripoSG / Step1X-3D / instant-nurec）---
+# 按官方 README 补齐后在此追加依赖（TripoSG 官方为仓库源码导入 src.triposg）
