@@ -18,10 +18,16 @@ import io
 import os
 import shutil
 import subprocess
+import sys
 import threading
 import time
 from abc import ABC, abstractmethod
 from typing import Any, ClassVar
+
+# 兼容 `python server.py` 直接执行：使 server 模块名与 __main__ 一致，
+# 避免 adapter.py 中 `from server import ...` 触发循环重载。
+if __name__ == "__main__":
+    sys.modules.setdefault("server", sys.modules["__main__"])
 
 HOST = os.environ.get("HOST", "0.0.0.0")
 PORT = int(os.environ.get("PORT", "8080"))

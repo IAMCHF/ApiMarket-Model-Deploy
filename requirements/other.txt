@@ -3,10 +3,13 @@
 # ============================================================================
 
 # --- 时序预测（amazon/chronos 系列 + chronos-bolt 系列） ---
-chronos-forecasting>=1.1.0
+# 锁定 1.x：2.x 需要 torch>=2.5 的 DTensor，镜像固化为 torch 2.4
+chronos-forecasting==1.5.3
 
 # --- 时序预测（google/timesfm-2.5-200m-pytorch） ---
-timesfm-utilities>=0.1.0
+# 注：timesfm 官方包名在 PyPI 上不固定（timesfm / timesfm-utilities 均有历史），
+# 按需按官方 README 安装；当前不阻塞 chronos 系列测试。
+# timesfm-utilities>=0.1.0
 
 # --- 隐私过滤（openai/privacy-filter，transformers 已在镜像 L2 固化） ---
 
