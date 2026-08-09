@@ -30,6 +30,7 @@ sys.path.insert(0, str(REPO_ROOT))
 
 TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
 DEFAULT_OUTPUT = REPO_ROOT / "models"
+TEST_OUTPUT = REPO_ROOT / "test"  # 测试脚本根目录：test/test-<模型名>/test-<模型名>.py
 
 # 加载引用替换的关键字参数名（from_pretrained 类调用的第一个位置参数亦替换）
 _LOAD_KWARGS = (
@@ -136,8 +137,8 @@ def build_test_script(model_id: str, cls_name: str) -> str:
 # {model_id} 服务测试脚本（自动生成，可自行扩展测试数据）
 #
 # 用法：
-#   本机验证:  python {model_id.split("/")[-1]}.py                    # 默认 localhost:8080
-#   内网部署:  python {model_id.split("/")[-1]}.py --host 10.0.62.60 --port <映射端口>
+#   本机验证:  python test-{model_id.replace("/", "-")}.py            # 默认 localhost:8080
+#   内网部署:  python test-{model_id.replace("/", "-")}.py --host 10.0.62.60 --port <映射端口>
 #
 # 验证 /health 与 /predict 两个接口；退出码 0=PASS 1=FAIL。
 # ============================================================================
@@ -448,8 +449,11 @@ def generate(output_root: Path) -> None:
 
         cls = get_adapter_class(model_id)
         _write_lf(folder / "requirements.txt", build_requirements(model_id, cls.category))
-        # 测试脚本：{模型文件夹名}.py（验证 /health + /predict）
-        _write_lf(folder / f"{folder.name}.py", build_test_script(model_id, cls.__name__))
+
+        # 测试脚本：test/test-<模型名>/test-<模型名>.py（验证 /health + /predict）
+        test_dir = TEST_OUTPUT / f"test-{folder.name}"
+        test_dir.mkdir(parents=True, exist_ok=True)
+        _write_lf(test_dir / f"test-{folder.name}.py", build_test_script(model_id, cls.__name__))
 
         weights_dir = folder / "weights"
         weights_dir.mkdir(exist_ok=True)  # 保留用户已放置的权重
