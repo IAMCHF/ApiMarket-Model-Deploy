@@ -18,17 +18,30 @@ requests>=2.32.0
 
 # ===== ocr =====
 # ============================================================================
-# requirements/ocr.txt — OCR / 文档解析（23 个模型）
+# requirements/ocr.txt — OCR / 文档解析
+#
+# 说明：本文件为类别级依赖清单。重依赖（paddle / docling）按模型按需启用，
+#       默认只装轻量依赖，避免每部署一个 OCR 模型都全量安装。
 # ============================================================================
 
-# --- PaddlePaddle 系（PaddleOCR-VL-1.6 / PP-OCRv5） ---
-# paddlepaddle-gpu 自带 CUDA 运行时，与镜像 CUDA 共存（见方案 8.1）
-paddlepaddle-gpu>=2.6.0
-paddleocr>=2.8.0
-
-# --- docling 系（granite-docling-258M） ---
-docling>=2.0.0
-
-# --- VLM OCR 共用 ---
-# transformers / torch 已在镜像 L2 固化；此处仅补充视觉处理
+# --- 通用视觉处理 ---
 opencv-python-headless>=4.9.0
+
+# --- baidu/Unlimited-OCR 官方推理依赖（AutoModel + model.infer） ---
+einops>=0.8.0
+addict>=2.4.0
+easydict>=1.13
+pymupdf>=1.24.0
+psutil>=5.9.0
+matplotlib>=3.8.0
+
+# ---------------------------------------------------------------------------
+# 可选重依赖（按模型启用，部署对应模型时解除注释）：
+# ---------------------------------------------------------------------------
+# PaddleOCR 系（PaddlePaddle/PaddleOCR-VL-1.6、PaddlePaddle/PP-OCRv5）：
+#   paddlepaddle-gpu>=2.6.0
+#   paddleocr>=2.8.0
+#
+# docling 系（ibm-granite/granite-docling-258M）：
+#   docling>=2.0.0
+# ---------------------------------------------------------------------------

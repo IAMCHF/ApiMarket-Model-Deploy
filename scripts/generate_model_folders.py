@@ -42,6 +42,18 @@ _LOAD_KWARGS = (
     "pretrained_model_name_or_path",
 )
 
+# 模型级附加依赖：类别级依赖存在冲突时（如不同模型要求不同 transformers 版本），
+# 在生成 requirements.txt 时追加到该模型文件夹，保证"装完即启动"。
+# 注意：pip 后装者覆盖先装者，故覆盖版本（如 transformers 降级）放在此处。
+PER_MODEL_REQUIREMENTS: dict[str, list[str]] = {
+    "baidu/Unlimited-OCR": [
+        # 官方 README 指定 transformers 4.57.1；镜像 5.x 移除了 modeling 所需的
+        # transformers.utils.import_utils.is_torch_fx_available（2026-08 实测）
+        "transformers==4.57.1",
+        "matplotlib>=3.8.0",
+    ],
+}
+
 
 def _write_lf(path: Path, text: str) -> None:
     """写文件并强制 LF 行尾（Windows 下避免 CRLF 破坏容器内 bash 脚本）。"""
@@ -206,13 +218,17 @@ def build_adapter(model_id: str) -> str:
     return "\n".join(parts)
 
 
-def build_requirements(category: str) -> str:
-    """合并 common + 类别依赖。"""
+def build_requirements(model_id: str, category: str) -> str:
+    """合并 common + 类别依赖 + 模型级附加依赖。"""
     header = f"# 依赖清单：common（平台通用）+ {category}（模型类别）\n"
     common = (REPO_ROOT / "requirements" / "common.txt").read_text(encoding="utf-8")
     cat_file = REPO_ROOT / "requirements" / f"{category}.txt"
     cat_text = cat_file.read_text(encoding="utf-8") if cat_file.exists() else "# （无额外类别依赖）\n"
-    return f"{header}\n# ===== common =====\n{common}\n# ===== {category} =====\n{cat_text}"
+    parts = [f"{header}\n# ===== common =====\n{common}\n# ===== {category} =====\n{cat_text}"]
+    extras = PER_MODEL_REQUIREMENTS.get(model_id)
+    if extras:
+        parts.append(f"# ===== {model_id} 模型级附加依赖 =====\n" + "\n".join(extras) + "\n")
+    return "\n".join(parts)
 
 
 def generate(output_root: Path) -> None:
@@ -236,7 +252,7 @@ def generate(output_root: Path) -> None:
         _write_lf(folder / "adapter.py", build_adapter(model_id))
 
         cls = get_adapter_class(model_id)
-        _write_lf(folder / "requirements.txt", build_requirements(cls.category))
+        _write_lf(folder / "requirements.txt", build_requirements(model_id, cls.category))
 
         weights_dir = folder / "weights"
         weights_dir.mkdir(exist_ok=True)  # 保留用户已放置的权重

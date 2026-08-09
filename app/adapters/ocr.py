@@ -55,10 +55,26 @@ class VLMOCRAdapter(BaseAdapter):
 
     def _load(self) -> None:
         import torch
-        from transformers import AutoModelForCausalLM, AutoProcessor
 
         self._device_obj = torch.device(self.device)
         trust_remote_code = bool(self.config.get("trust_remote_code", True))
+
+        if self.model_id == "baidu/Unlimited-OCR":
+            # 官方推理路径：AutoModel + AutoTokenizer + model.infer（见官方 README）
+            from transformers import AutoModel, AutoTokenizer
+
+            self._tokenizer = AutoTokenizer.from_pretrained(self.model_id, trust_remote_code=trust_remote_code)
+            self._model = AutoModel.from_pretrained(
+                self.model_id,
+                trust_remote_code=trust_remote_code,
+                use_safetensors=True,
+                torch_dtype=torch.bfloat16 if self._device_obj.type == "cuda" else torch.float32,
+            )
+            self._model.eval().to(self._device_obj)
+            return
+
+        from transformers import AutoModelForCausalLM, AutoProcessor
+
         self._processor = AutoProcessor.from_pretrained(self.model_id, trust_remote_code=trust_remote_code)
         self._model = AutoModelForCausalLM.from_pretrained(
             self.model_id,
@@ -66,6 +82,30 @@ class VLMOCRAdapter(BaseAdapter):
             torch_dtype=torch.float16 if self._device_obj.type == "cuda" else torch.float32,
         )
         self._model.eval().to(self._device_obj)
+
+    @staticmethod
+    def _read_output_dir(output_dir: str) -> str:
+        """扫描推理输出目录，合并全部文本结果（result.md / result.txt / result.json 等）。
+
+        Unlimited-OCR 的 infer 输出 result.md（OCR 文本）与 result_with_boxes.jpg（可视化）。
+        """
+        import glob
+        import os
+
+        texts = []
+        for path in sorted(glob.glob(os.path.join(output_dir, "**", "*"), recursive=True)):
+            if not os.path.isfile(path):
+                continue
+            if path.lower().endswith((".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp")):
+                continue
+            try:
+                with open(path, encoding="utf-8", errors="ignore") as f:
+                    content = f.read().strip()
+            except OSError:
+                continue
+            if content:
+                texts.append(content)
+        return "\n".join(texts)
 
     def _predict(self, inputs: dict[str, Any], params: dict[str, Any]) -> dict[str, Any]:
         import torch
@@ -78,6 +118,44 @@ class VLMOCRAdapter(BaseAdapter):
         prompt = params.get("prompt") or self.PROMPTS.get(self.model_id, "识别图片中的全部文字。")
         max_new_tokens = int(params.get("max_new_tokens", self.config.get("max_new_tokens", 2048)))
 
+        # ---- baidu/Unlimited-OCR：官方 infer 接口（输出写入临时目录） ----
+        if self.model_id == "baidu/Unlimited-OCR":
+            import os
+            import shutil
+            import tempfile
+
+            from ..utils.io_codec import b64_to_bytes
+
+            infer_prompt = params.get("prompt") or "<image>document parsing."
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+                tmp.write(b64_to_bytes(image_b64))
+                image_path = tmp.name
+            output_dir = tempfile.mkdtemp(prefix="unlimitedocr_out_")
+            try:
+                result = self._model.infer(
+                    self._tokenizer,
+                    prompt=infer_prompt,
+                    image_file=image_path,
+                    output_path=output_dir,
+                    base_size=int(params.get("base_size", 1024)),
+                    image_size=int(params.get("image_size", 640)),
+                    crop_mode=bool(params.get("crop_mode", True)),
+                    max_length=int(params.get("max_new_tokens", 32768)),
+                    no_repeat_ngram_size=int(params.get("no_repeat_ngram_size", 35)),
+                    ngram_window=int(params.get("ngram_window", 128)),
+                    save_results=True,
+                )
+            finally:
+                os.unlink(image_path)
+            text = ""
+            if isinstance(result, str) and result.strip():
+                text = result
+            else:
+                text = self._read_output_dir(output_dir)
+            shutil.rmtree(output_dir, ignore_errors=True)
+            return {"text": text}
+
+        # ---- 通用 VLM 路径 ----
         # 多数 VLM 使用 chat 模板；不支持的模型退化为纯文本 prompt
         messages = [{"role": "user", "content": [{"type": "image"}, {"type": "text", "text": prompt}]}]
         try:
