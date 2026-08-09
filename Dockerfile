@@ -63,12 +63,13 @@ RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
 # L2 框架层：PyTorch 2.4 (cu121) + transformers + accelerate + 通用框架
 # ===========================================================================
 
-# 安装 PyTorch 2.4 + torchvision + torchaudio (cu121)
-# 注：CI（GitHub Actions）使用官方源最快；镜像下载到内网后自行换源。
+# 安装 PyTorch 2.5.1 + torchvision + torchaudio (cu121)
+# 注：torch 2.5 引入 torch.distributed.tensor.DTensor，多个 2026 新模型（chronos-2、
+#     Unlimited-OCR 等）依赖该 API；2.4 无法加载（2026-08 实测）。
 RUN pip install --no-cache-dir \
-        torch==2.4.0 \
-        torchvision==0.19.0 \
-        torchaudio==2.4.0 \
+        torch==2.5.1 \
+        torchvision==0.20.1 \
+        torchaudio==2.5.1 \
         --index-url https://download.pytorch.org/whl/cu121
 
 # 安装通用框架依赖（transformers / accelerate / bitsandbytes / onnxruntime 等）
