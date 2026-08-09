@@ -61,6 +61,9 @@ def main() -> int:
         resp = urllib.request.urlopen(base + "/health", timeout=15)
         body = json.loads(resp.read().decode())
         print(f"[health] {resp.status} status={body.get('status')} model={body.get('model')}")
+    except urllib.error.HTTPError as exc:
+        # 503 = 模型 loading（懒加载），属正常初始状态
+        print(f"[health] {exc.code} status=loading（懒加载，等待首次 predict）")
     except Exception as exc:
         print(f"[health] 连接失败: {exc}")
         return 1

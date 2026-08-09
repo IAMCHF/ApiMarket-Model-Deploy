@@ -54,6 +54,11 @@ PER_MODEL_REQUIREMENTS: dict[str, list[str]] = {
         "transformers==4.57.1",
         "matplotlib>=3.8.0",
     ],
+    "Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice": [
+        # Qwen3-TTS（model_type=qwen3_tts）需要最新 transformers：
+        # 4.57.1 与 5.14.1 均不支持（2026-08 实测），pip 装最新
+        "transformers>=5.15",
+    ],
 }
 
 # ============================================================================

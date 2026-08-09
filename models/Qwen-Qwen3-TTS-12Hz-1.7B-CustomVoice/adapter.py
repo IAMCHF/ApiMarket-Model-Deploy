@@ -21,20 +21,22 @@ from server import (
 
 
 class TransformersTTSAdapter(BaseAdapter):
-    """transformers 原生 TTS：AutoModelForTextToSpeech（Qwen3-TTS CustomVoice）。
+    """transformers 原生 TTS：AutoModel 加载 Qwen3-TTS（qwen3_tts 架构）。
 
     支持通过 params.speaker_description 传入音色描述（CustomVoice 特性）。
+    注：需要 transformers>=5.15（per-model 依赖覆盖，2026-08 实测 4.57/5.14 均不支持）。
     """
 
     MODELS = ('Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice',)
 
     def _load(self) -> None:
         import torch
-        from transformers import AutoModelForTextToSpeech, AutoTokenizer
+        from transformers import AutoModel, AutoTokenizer
 
         self._device_obj = torch.device(self.device)
         self._tokenizer = AutoTokenizer.from_pretrained(self._load_ref)
-        self._model = AutoModelForTextToSpeech.from_pretrained(self._load_ref,
+        self._model = AutoModel.from_pretrained(
+            self._load_ref,
             torch_dtype=torch.float16 if self._device_obj.type == "cuda" else torch.float32,
         )
         self._model.eval().to(self._device_obj)

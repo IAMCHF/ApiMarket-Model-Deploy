@@ -18,21 +18,45 @@ requests>=2.32.0
 
 # ===== tts =====
 # ============================================================================
-# requirements/tts.txt — 语音合成 TTS（13 个模型）
+# requirements/tts.txt — 语音合成 TTS
+#
+# 说明：默认只装轻量依赖（Qwen3-TTS 走 transformers 原生）。
+#       厂商专用包按模型按需启用（部署对应模型时解除注释），
+#       避免每部署一个 TTS 模型都全量安装且包名不可用导致启动失败。
 # ============================================================================
 
-# --- CosyVoice 系（Fun-CosyVoice3） ---
-funasr>=1.2.0
-cosyvoice>=0.1.0
+# --- transformers 原生 TTS（Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice） ---
+# transformers / torch 已在镜像 L2 固化
 
-# --- 各家官方 TTS 包 ---
-fish-speech>=1.5.0          # fishaudio/s2-pro
-zonos>=0.2.0                # Zyphra/Zonos
-voxcpm>=0.1.0               # openbmb/VoxCPM2（OpenBMB 官方）
-sesame-csm>=1.0.0           # sesame/csm-1b
-orpheus-tts>=0.1.0          # canopylabs/orpheus-3b
-index-tts>=1.0.0            # IndexTeam/IndexTTS2
-cpm-kernels>=1.0.10         # VoxCPM 底层 kernel
+# ---------------------------------------------------------------------------
+# 可选厂商专用依赖（按模型启用，部署对应模型时解除注释）：
+# ---------------------------------------------------------------------------
+# CosyVoice 系（FunAudioLLM/Fun-CosyVoice3-0.5B-2512）：
+#   funasr>=1.2.0
+#   cosyvoice>=0.1.0
+#
+# fishaudio/s2-pro：
+#   fish-speech>=1.5.0
+#
+# Zyphra/Zonos：
+#   zonos>=0.2.0
+#
+# openbmb/VoxCPM2：
+#   voxcpm>=0.1.0
+#   cpm-kernels>=1.0.10
+#
+# sesame/csm-1b：
+#   sesame-csm>=1.0.0
+#
+# canopylabs/orpheus-3b：
+#   orpheus-tts>=0.1.0
+#
+# IndexTeam/IndexTTS2：
+#   index-tts>=1.0.0
+#
+# 待接入厂商运行时（MOSS-TTS / VibeVoice / OmniVoice / neutts）：
+#   对应适配器为骨架实现，按官方 README 补齐后在此追加依赖
+# ---------------------------------------------------------------------------
 
-# --- 待接入厂商运行时（MOSS-TTS / VibeVoice / OmniVoice / neutts）---
-# 对应适配器为骨架实现，按官方 README 补齐后在此追加依赖
+# ===== Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice 模型级附加依赖 =====
+transformers>=5.15
