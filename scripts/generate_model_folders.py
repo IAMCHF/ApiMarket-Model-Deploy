@@ -47,17 +47,18 @@ _LOAD_KWARGS = (
 # 模型级附加依赖：类别级依赖存在冲突时（如不同模型要求不同 transformers 版本），
 # 在生成 requirements.txt 时追加到该模型文件夹，保证"装完即启动"。
 # 注意：pip 后装者覆盖先装者，故覆盖版本（如 transformers 降级）放在此处。
+
+# 兼容性约束记录（2026-08 实测，上游依赖未支持，等待官方发布后恢复 per-model 覆盖）：
+#   - Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice: transformers 5.14.1 与 main(5.15.0.dev0) 均未注册
+#     qwen3_tts 架构，需 Qwen 官方独立推理栈（非 transformers 主库）
+#   - amazon/chronos-* 系列: PyPI 2.3.1 与 GitHub main 的 ChronosConfig 均不支持 bolt/chronos-2
+#     新 config（input_patch_size 等），需 Amazon 发布新版包
 PER_MODEL_REQUIREMENTS: dict[str, list[str]] = {
     "baidu/Unlimited-OCR": [
         # 官方 README 指定 transformers 4.57.1；镜像 5.x 移除了 modeling 所需的
         # transformers.utils.import_utils.is_torch_fx_available（2026-08 实测）
         "transformers==4.57.1",
         "matplotlib>=3.8.0",
-    ],
-    "Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice": [
-        # Qwen3-TTS（model_type=qwen3_tts）需要最新 transformers：
-        # 4.57.1 与 5.14.1 均不支持（2026-08 实测），pip 装最新
-        "transformers>=5.15",
     ],
 }
 

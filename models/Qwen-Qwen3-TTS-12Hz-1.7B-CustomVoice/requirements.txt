@@ -57,6 +57,3 @@ requests>=2.32.0
 # 待接入厂商运行时（MOSS-TTS / VibeVoice / OmniVoice / neutts）：
 #   对应适配器为骨架实现，按官方 README 补齐后在此追加依赖
 # ---------------------------------------------------------------------------
-
-# ===== Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice 模型级附加依赖 =====
-transformers>=5.15

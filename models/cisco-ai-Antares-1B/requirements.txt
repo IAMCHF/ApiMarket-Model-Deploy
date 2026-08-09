@@ -22,8 +22,9 @@ requests>=2.32.0
 # ============================================================================
 
 # --- 时序预测（amazon/chronos 系列 + chronos-bolt 系列） ---
-# 镜像已升级 torch 2.5.1（2026-08），chronos 2.x 可用；
-# 且 HF 上 chronos 系列 config 已迁移 2.x 格式（chronos_config 嵌套），必须 >=2.0
+# 注：PyPI 最新 2.3.1（与 GitHub main 同版本）的 ChronosConfig 不支持
+#     bolt/chronos-2 新 config（input_patch_size 等，2026-08 实测），
+#     该系列模型需等待 Amazon 发布新版包；安装本包保证依赖完整，加载失败会有明确错误。
 chronos-forecasting>=2.0.0
 
 # --- 时序预测（google/timesfm-2.5-200m-pytorch） ---
