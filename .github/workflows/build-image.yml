@@ -8,8 +8,8 @@
 #   4. 上传为 GitHub Actions Artifact，供企业内网下载
 #
 # 使用方式：
-#   - 自动触发：修改 Dockerfile / requirements-base.txt 后推送到 main 分支
 #   - 手动触发：GitHub 仓库 → Actions → Build Base Image → Run workflow
+#     （镜像构建依赖官方源，CI 环境最快；下载到内网后自行换源）
 #
 # 下载与加载：
 #   1. 在 Actions 运行结果页面下载 artifact: model-deploy-image
@@ -22,12 +22,6 @@
 name: Build Base Image
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'Dockerfile'
-      - 'requirements-base.txt'
-      - '.github/workflows/build-image.yml'
   workflow_dispatch:
 
 env:
