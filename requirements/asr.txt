@@ -3,7 +3,7 @@
 # ============================================================================
 
 # --- NeMo 系（nemotron-asr / parakeet / canary / cohere-transcribe） ---
-# nemo_toolkit 体积大且自带 torch 版本约束，如与镜像 torch 2.4 冲突，
+# nemo_toolkit 体积大且自带 torch 版本约束，如与镜像 torch 2.5 冲突，
 # 建议单独为该类模型覆盖 torch 版本（entrypoint 中 pip install -U torch）
 nemo_toolkit>=1.23.0
 
