@@ -60,15 +60,24 @@ RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
     && python -m pip install --upgrade pip setuptools wheel
 
 # ===========================================================================
+# 国内 pip 镜像加速（可选；部署到纯内网后移除即可）
+# ===========================================================================
+ENV PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
+ENV PIP_TRUSTED_HOST=pypi.tuna.tsinghua.edu.cn
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# ===========================================================================
 # L2 框架层：PyTorch 2.4 (cu121) + transformers + accelerate + 通用框架
 # ===========================================================================
 
 # 安装 PyTorch 2.4 + torchvision + torchaudio (cu121)
+# 国内网络使用清华 pytorch-wheels 镜像加速；如镜像缺失可回退官方源：
+#   --index-url https://download.pytorch.org/whl/cu121
 RUN pip install --no-cache-dir \
         torch==2.4.0 \
         torchvision==0.19.0 \
         torchaudio==2.4.0 \
-        --index-url https://download.pytorch.org/whl/cu121
+        --index-url https://mirrors.tuna.tsinghua.edu.cn/pytorch-wheels/cu121
 
 # 安装通用框架依赖（transformers / accelerate / bitsandbytes / onnxruntime 等）
 COPY requirements-base.txt /tmp/requirements-base.txt
