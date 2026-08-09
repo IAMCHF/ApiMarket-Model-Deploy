@@ -4,56 +4,46 @@
 # sesame/csm-1b 服务测试脚本（自动生成，可自行扩展测试数据）
 #
 # 用法：
-#   本机验证:  python test-sesame-csm-1b.py            # 默认 localhost:8080
+#   本机验证:  python test-sesame-csm-1b.py                  # 默认 localhost:8080
 #   内网部署:  python test-sesame-csm-1b.py --host 10.0.62.60 --port <映射端口>
 #
+# 测试数据预置：本目录 data/ 下（image.png / audio.wav / texts.json 等）
+# 文件类输入统一 base64 传输。
 # 验证 /health 与 /predict 两个接口；退出码 0=PASS 1=FAIL。
 # ============================================================================
 
 import argparse
 import base64
-import io
 import json
-import math
-import struct
+import os
 import sys
 import urllib.error
 import urllib.request
 
-
-def _gen_image(text: str = "TEST 123", width: int = 640, height: int = 180) -> str:
-    """生成一张含文字的图片（base64），供图像类模型测试。"""
-    from PIL import Image, ImageDraw
-
-    img = Image.new("RGB", (width, height), "white")
-    try:
-        font = ImageFont.truetype("arial.ttf", 48)
-    except Exception:
-        font = None
-    ImageDraw.Draw(img).text((30, 60), text, fill="black", font=font)
-    buf = io.BytesIO()
-    img.save(buf, format="PNG")
-    return base64.b64encode(buf.getvalue()).decode()
+_DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 
 
-def _gen_audio(duration: float = 1.5, freq: int = 440, sample_rate: int = 16000) -> str:
-    """生成一段正弦波音频（base64 wav），供语音类模型测试。"""
-    buf = io.BytesIO()
-    with wave.open(buf, "wb") as w:
-        w.setnchannels(1)
-        w.setsampwidth(2)
-        w.setframerate(sample_rate)
-        frames = b"".join(
-            struct.pack("<h", int(20000 * math.sin(2 * math.pi * freq * t / sample_rate)))
-            for t in range(int(duration * sample_rate))
-        )
-        w.writeframes(frames)
-    return base64.b64encode(buf.getvalue()).decode()
+def _load_text(name: str) -> str:
+    """读取 data/ 下的文本文件。"""
+    with open(os.path.join(_DATA_DIR, name), encoding="utf-8") as f:
+        return f.read().strip()
+
+
+def _load_json(name: str):
+    """读取 data/ 下的 JSON 文件。"""
+    with open(os.path.join(_DATA_DIR, name), encoding="utf-8") as f:
+        return json.load(f)
+
+
+def _load_b64(name: str) -> str:
+    """读取 data/ 下的二进制文件并转 base64（文件类输入统一 base64 传输）。"""
+    with open(os.path.join(_DATA_DIR, name), "rb") as f:
+        return base64.b64encode(f.read()).decode()
 
 
 def gen_inputs():
-    """生成该模型可用的测试输入（inputs 字段）。"""
-    return {'text': '你好，欢迎使用语音合成服务。'}
+    """构造 /predict 请求的 inputs 字段（数据来自本目录 data/）。"""
+    return {'text': _load_text('text.txt')}
 
 
 def main() -> int:
