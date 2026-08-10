@@ -13,7 +13,7 @@
 
 models:
   # ---------------- OCR / 文档解析（23） ----------------
-  baidu/Unlimited-OCR: {category: ocr, vram_gb: 6}
+  baidu/Unlimited-OCR: {category: ocr, vram_gb: 6}  测试通过
   ATH-MaaS/OvisOCR2: {category: ocr, vram_gb: 1.8}
   deepseek-ai/DeepSeek-OCR-2: {category: ocr, vram_gb: 6}
   PaddlePaddle/PaddleOCR-VL-1.6: {category: ocr, vram_gb: 2}
