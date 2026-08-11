@@ -1,6 +1,6 @@
 # ============================================================================
 # AI 模型部署平台 - 基础镜像
-# 基于 nvidia/cuda:12.1.1-cudnn8 + Python 3.11 + PyTorch 2.4 (cu121)
+# 基于 nvidia/cuda:12.1.1-cudnn8 + Python 3.11.13 + PyTorch 2.7 (cu126)
 #
 # 设计原则：
 #   - 镜像只固化二进制运行环境（L1 系统层 + L2 框架层）
@@ -12,7 +12,7 @@
 FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
 
 # ===========================================================================
-# L1 系统层：CUDA 12.1 + cuDNN + Python 3.11 + ffmpeg + tesseract + 中文字体
+# L1 系统层：CUDA 12.1 + cuDNN + Python 3.11.13 + ffmpeg + tesseract + 中文字体
 # ===========================================================================
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -60,17 +60,15 @@ RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
     && python -m pip install --upgrade pip setuptools wheel
 
 # ===========================================================================
-# L2 框架层：PyTorch 2.4 (cu121) + transformers + accelerate + 通用框架
+# L2 框架层：PyTorch 2.7 (cu126) + transformers + accelerate + 通用框架
 # ===========================================================================
 
-# 安装 PyTorch 2.5.1 + torchvision + torchaudio (cu121)
-# 注：torch 2.5 引入 torch.distributed.tensor.DTensor，多个 2026 新模型（chronos-2、
-#     Unlimited-OCR 等）依赖该 API；2.4 无法加载（2026-08 实测）。
+# 安装 PyTorch 2.7.0 + torchvision + torchaudio (cu126)
 RUN pip install --no-cache-dir \
-        torch==2.5.1 \
-        torchvision==0.20.1 \
-        torchaudio==2.5.1 \
-        --index-url https://download.pytorch.org/whl/cu121
+        torch==2.7.0+cu126 \
+        torchvision==0.21.2 \
+        torchaudio==2.7.0 \
+        --index-url https://download.pytorch.org/whl/cu126
 
 # 安装通用框架依赖（transformers / accelerate / bitsandbytes / onnxruntime 等）
 COPY requirements-base.txt /tmp/requirements-base.txt
